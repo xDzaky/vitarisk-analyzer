@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme{
+  --color-dark-green-teal:#01352C;
+  --color-pine-green:#295F4E;
+  --color-sage-green:#88B990;
+  --color-mint-green:#61B390;
+  --color-pure-green:#1d7020;
+  --color-bg:#fafafa;
+}
+
+.bg-custom{
+  background-image: url('./assets/background.svg');
+}
