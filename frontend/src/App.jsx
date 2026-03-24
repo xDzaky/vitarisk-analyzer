@@ -7,7 +7,7 @@ import LandingPage from "./components/LandingPage";
 
 function App() {
   return (
-    <GoogleOAuthProvider clientId="https://660074337831-gqktjeukc1umn70bgnm1s11ga41u5g3n.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="660074337831-gqktjeukc1umn70bgnm1s11ga41u5g3n.apps.googleusercontent.com">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
