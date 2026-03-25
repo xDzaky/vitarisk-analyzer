@@ -3,15 +3,17 @@ import bg from "../assets/background.svg";
 import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${bg})` }}
     >
       {/* overlay putih langsung di atas background */}
-      <div className="absolute inset-0 "
-      style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }} />
+      <div
+        className="absolute inset-0 "
+        style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+      />
 
       {/* konten */}
       <div className="relative z-10">
@@ -29,7 +31,12 @@ export default function LandingPage() {
             <br />
             risiko kesehatan berdasarkan kondisi dan kebiasaanmu.
           </p>
-          <button onClick={() => navigate("/login")} className="w-80 rounded-4xl py-2 px-6 bg-pine-green font-medium text-xl text-white hover:bg-dark-green-teal transition">Mulai Tes</button>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-80 rounded-4xl py-2 px-6 bg-pine-green font-medium text-xl text-white hover:bg-dark-green-teal transition"
+          >
+            Mulai Tes
+          </button>
         </section>
       </div>
     </div>
