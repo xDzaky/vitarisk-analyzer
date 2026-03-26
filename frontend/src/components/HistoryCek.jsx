@@ -27,7 +27,7 @@ const HistoryPage = () => {
               className="border border-[#0B4C00] rounded-lg p-6 text-center cursor-pointer"
             >
               <p className="font-medium">{item.penyakit}</p>
-              <p className="text-sm text-gray-500">{item.tanggal}</p>
+              <p className="text-sm text-[#0B4C00]">{item.tanggal}</p>
             </div>
           ))}
         </div>
