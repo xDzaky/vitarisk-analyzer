@@ -26,7 +26,7 @@ export default function NavbarPage() {
             >
               Deskripsi
               {active === "deskripsi" && (
-                <span className="absolute -bottom-1 left-0 w-full h-1 bg-[#295F4E] rounded-full"></span>
+                <span className="absolute -bottom-1 left-0 w-full h-1 bg-pine-green rounded-full"></span>
               )}
             </a>
 
@@ -41,7 +41,7 @@ export default function NavbarPage() {
             >
               Cara Kerja
               {active === "cara-kerja" && (
-                <span className="absolute -bottom-1 left-0 w-full h-1 bg-[#295F4E] rounded-full"></span>
+                <span className="absolute -bottom-1 left-0 w-full h-1 bg-pine-green rounded-full"></span>
               )}
             </a>
 
@@ -56,7 +56,7 @@ export default function NavbarPage() {
             >
               Sumber Data
               {active === "sumber-data" && (
-                <span className="absolute -bottom-1 left-0 w-full h-1 bg-[#295F4E] rounded-full"></span>
+                <span className="absolute -bottom-1 left-0 w-full h-1 bg-pine-green rounded-full"></span>
               )}
             </a>
           </div>
@@ -85,7 +85,7 @@ export default function NavbarPage() {
       <div className="fixed bottom-0 left-0 w-full flex justify-center py-4 bg-white/80 backdrop-blur-md z-50">
         <Link
           to="/choice"
-          className="bg-[#295F4E] text-white px-19 py-3 rounded-full font-medium shadow-lg hover:scale-105 transition"
+          className="bg-pine-green text-white px-19 py-3 rounded-full font-medium shadow-lg hover:scale-105 transition"
         >
           Mulai Cek Sekarang
         </Link>

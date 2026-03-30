@@ -38,7 +38,7 @@ const ChoicePage = () => {
 
               {/* Button */}
               <Link
-                to={`/choice?penyakit=${item.penyakit.toLowerCase()}`}
+                to={`/choice/${item.penyakit.toLowerCase()}`}
                 className="bg-[#2D6A4F] text-white px-19 py-3 rounded-full font-medium"
               >
                 Cek

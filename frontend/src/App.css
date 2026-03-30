@@ -7,8 +7,15 @@
   --color-mint-green:#61B390;
   --color-pure-green:#1d7020;
   --color-bg:#fafafa;
+  --color-sub-title:#0B4C00;
 }
 
 .bg-custom{
   background-image: url('./assets/background.svg');
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
