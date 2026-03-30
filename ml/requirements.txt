@@ -1,0 +1,14 @@
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.8.0
+matplotlib==3.9.1
+seaborn==0.13.2
+joblib==1.4.2
+kagglehub==0.3.3
+flask==3.0.3
+flask-cors==4.0.1
+requests==2.32.3
+python-dotenv==1.0.1
+gunicorn==22.0.0
+ipykernel==6.29.5
+jupyter==1.0.0
