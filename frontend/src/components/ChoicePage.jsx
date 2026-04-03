@@ -22,7 +22,7 @@ const ChoicePage = () => {
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center px-6">
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-lg px-12 py-16">
-        <h1 className="text-3xl font-bold text-[#0B4C00] text-center mb-16">
+        <h1 className="text-3xl font-bold text-sub-title text-center mb-16">
           Pilih Penyakit yang Ingin Dicek
         </h1>
 

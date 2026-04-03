@@ -5,9 +5,14 @@ import { ArrowRight } from "lucide-react";
 
 export default function JantungPage() {
   const [umur, setUmur] = useState("");
+  const [gender, setGender] = useState("");
+  const [nyeriDada, setNyeriDada] = useState("");
   const [tekananDarah, setTekananDarah] = useState("");
   const [kolesterol, setKolesterol] = useState("");
   const [detakJantung, setDetakJantung] = useState("");
+  const [riwayat, setRiwayat] = useState("");
+  const [exangina, setExangina] = useState("");
+  const [merokok, setMerokok] = useState("");
   const [isOn, setIsOn] = useState(true);
 
   const handleUmur = (e) => {
@@ -37,8 +42,43 @@ export default function JantungPage() {
     val = Math.max(60, Math.min(200, Number(val)));
     setDetakJantung(val);
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      age: Number(umur),
+      sex: gender,
+      cp: nyeriDada,
+      trestbps: Number(tekananDarah),
+      chol: Number(kolesterol),
+      fbs: isOn ? 'ya' : 'tidak',
+      thalach: Number(detakJantung),
+      exang: exangina,
+      family_history: riwayat,
+      smoking: merokok,
+    };
+
+    console.log(payload); // cek dulu sebelum kirim
+
+    try {
+      const res = await fetch("http://localhost:3000/api/predict/heart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("HASIL:", data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="shadow m-5 rounded-xl h-full">
+    <form onSubmit={handleSubmit} className="shadow m-5 rounded-xl h-full">
       <div>
         <h2 className="font-bold p-5 px-20 text-sub-title mb-3">
           —— Data Personal
@@ -53,6 +93,7 @@ export default function JantungPage() {
               value={umur}
               onChange={handleUmur}
               placeholder="Contoh : 17"
+              required
               className="border-2  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
             />
             <span className="absolute left-83 translate-y-1/2 top-1/2 ">
@@ -69,6 +110,8 @@ export default function JantungPage() {
                   type="radio"
                   name="gender"
                   value="laki-laki"
+                  onChange={(e) => setGender(e.target.value)}
+                  required
                   className="accent-pure-green"
                 />
                 <span>Laki-laki</span>
@@ -78,7 +121,9 @@ export default function JantungPage() {
                 <input
                   type="radio"
                   name="gender"
+                  onChange={(e) => setGender(e.target.value)}
                   value="perempuan"
+                  required
                   className="accent-pure-green"
                 />
                 <span>Perempuan</span>
@@ -96,12 +141,15 @@ export default function JantungPage() {
         </label>
         <select
           name="tingkatNyeri"
-          id=""
+          id=""          
+          onChange={(e) => setNyeriDada(e.target.value)}
+          required
           className=" w-full border-2 mt-3  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
         >
-          <option value="tidak">Tidak Pernah Nyeri di Dada</option>
-          <option value="jarang">Jarang Nyeri di Dada</option>
-          <option value="sering">Sering Nyeri di Dada</option>
+          <option value="tidak pernah">Tidak Pernah Nyeri di Dada</option>
+          <option value="nyeri ringan">Jarang Nyeri di Dada</option>
+          <option value="nyeri sedang">Sering Nyeri di Dada</option>
+          <option value="nyeri berat">Sering Nyeri di Dada</option>
         </select>
       </div>
       <div className="flex justify-between mt-15">
@@ -114,6 +162,7 @@ export default function JantungPage() {
             value={tekananDarah}
             onChange={handleTekanan}
             placeholder="Contoh : 17"
+            required
             className="border-2  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
           />
           <span className="absolute left-83 translate-y-1/2 top-1/2 ">
@@ -129,6 +178,7 @@ export default function JantungPage() {
             value={kolesterol}
             onChange={handleKolesterol}
             placeholder="Contoh : 170"
+            required
             className="border-2  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
           />
           <span className="absolute left-83 translate-y-1/2 top-1/2 ">
@@ -153,6 +203,7 @@ export default function JantungPage() {
           </div>
 
           <button
+          type="button"
             onClick={() => setIsOn(!isOn)}
             className={`relative w-12 h-6 rounded-full transition-colors duration-200 shrink-0 ${
               isOn ? "bg-pure-green" : "bg-gray-300"
@@ -175,13 +226,14 @@ export default function JantungPage() {
               value={detakJantung}
               onChange={handleDetakJantung}
               placeholder="Contoh : 170"
+              required
               className="border-2  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
             />
             <span className="absolute left-83 translate-y-1/2 top-1/2 ">
               BPM
             </span>
           </div>
-          <div id="riwayatKeluarga" className="my-3">
+          <div id="riwayatKeluarga" className="my-3 w-95">
             <label htmlFor="" className="my-3 font-semibold">
               Riwayat Keluarga{" "}
             </label>
@@ -190,7 +242,9 @@ export default function JantungPage() {
                 <input
                   type="radio"
                   name="riwayat"
-                  value="laki-laki"
+                  value="tidak"
+                  onChange={(e) => setRiwayat(e.target.value)}
+                  required
                   className="accent-pure-green"
                 />
                 <span>Tidak Ada</span>
@@ -200,19 +254,12 @@ export default function JantungPage() {
                 <input
                   type="radio"
                   name="riwayat"
-                  value="perempuan"
+                  onChange={(e) => setRiwayat(e.target.value)}
+                  value="ya"
+                  required
                   className="accent-pure-green"
                 />
                 <span>Ada</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="riwayat"
-                  value="tidakTahu"
-                  className="accent-pure-green"
-                />
-                <span>Tidak Tahu</span>
               </label>
             </div>
           </div>
@@ -227,7 +274,9 @@ export default function JantungPage() {
                 <input
                   type="radio"
                   name="nyeriDada"
-                  value="laki-laki"
+                  value="ya"
+                  required
+                  onChange={(e)=> setExangina(e.target.value)}
                   className="accent-pure-green"
                 />
                 <span>Ya</span>
@@ -236,16 +285,18 @@ export default function JantungPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
+                  onChange={(e)=> setExangina(e.target.value)}
                   name="nyeriDada"
-                  value="perempuan"
+                  value="tidak"
+                  required
                   className="accent-pure-green"
                 />
                 <span>Tidak</span>
               </label>
             </div>
           </div>
-          <div>
-            <label htmlFor="" className="my-3 font-semibold">
+          <div id="merokok" className="my-3 w-95 ">
+            <label htmlFor="" className="my-3 font-semibold ">
               Kebiasaan Merokok{" "}
             </label>
             <div className="flex gap-15 p-3 w-95">
@@ -253,7 +304,9 @@ export default function JantungPage() {
                 <input
                   type="radio"
                   name="merokok"
-                  value="true"
+                  value="ya"
+                  onChange={(e)=>setMerokok(e.target.value)}
+                  required
                   className="accent-pure-green"
                 />
                 <span>Ya</span>
@@ -261,28 +314,46 @@ export default function JantungPage() {
 
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
+                  onChange={(e)=>setMerokok(e.target.value)}
                   type="radio"
                   name="merokok"
-                  value="false"
+                  value="tidak"
+                  required
                   className="accent-pure-green"
                 />
                 <span>Tidak</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  onChange={(e)=>setMerokok(e.target.value)}
+                  type="radio"
+                  name="merokok"
+                  value="kadang-kadang"
+                  required
+                  className="accent-pure-green"
+                />
+                <span>Kadang-kadang</span>
               </label>
             </div>
           </div>
         </div>
         <div className="flex justify-between mt-15">
           <div className="flex gap-2 items-center">
-            <img src={IconShield} alt="" className="w-3"/>
+            <img src={IconShield} alt="" className="w-3" />
             <p className="text-[#8F6F6D] align-middle">
               Data kamu tidak akan disimpan. Privasi dijamin 100%.
             </p>
           </div>
-          <button type="submit" className="bg-pine-green py-2 px-10 flex gap-3 rounded-xl mx-45 text-white hover:scale-105 transition group">
-            Lihat hasil prediksi <ArrowRight className="group-hover:translate-x-2 transition"/>
+          <button
+            type="submit"
+            className="bg-pine-green py-2 px-10 flex gap-3 rounded-xl mx-45 text-white hover:scale-105 transition group"
+          >
+            Lihat hasil prediksi{" "}
+            <ArrowRight className="group-hover:translate-x-2 transition" />
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
