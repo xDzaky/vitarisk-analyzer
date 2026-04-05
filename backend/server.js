@@ -16,6 +16,7 @@ const predictRoutes       = require("./routes/predict");
 const recommendRoutes     = require("./routes/recommendations");
 const hospitalsRoutes     = require("./routes/hospitals");
 const authRoutes          = require("./routes/auth");
+const chatRoutes          = require("./routes/chat");
 const { sendSuccess, sendError } = require("./utils/apiResponse");
 
 const app  = express();
@@ -82,6 +83,7 @@ app.use("/api/predict",         predictRoutes);
 app.use("/api/recommendations", recommendRoutes);
 app.use("/api/hospitals",       hospitalsRoutes);
 app.use("/api/auth",            authRoutes);
+app.use("/api/chat",            chatRoutes);
 
 app.get("/", (_req, res) => {
   if (HAS_FRONTEND) {

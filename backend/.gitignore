@@ -4,6 +4,9 @@ node_modules/
 # Environment (contains secrets)
 .env
 
+# Local knowledge-base backups
+data/chatbotKnowledge.json.backup*.json
+
 # Logs
 *.log
 npm-debug.log*
