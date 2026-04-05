@@ -173,7 +173,7 @@ def apply_lifestyle_modifiers(base_prob: float, data: dict) -> float:
 
     # Smoking
     smoking = str(data.get("smoking", "tidak")).lower()
-    if smoking in ("aktif setiap hari", "active", "yes", "1"):
+    if smoking in ("aktif setiap hari", "active", "yes", "ya", "1", "true"):
         delta += MODIFIERS["smoking_active"]
     elif smoking in ("kadang-kadang", "occasional"):
         delta += MODIFIERS["smoking_occasional"]
