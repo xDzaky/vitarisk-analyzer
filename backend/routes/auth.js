@@ -2,6 +2,7 @@ const express = require("express");
 const { sendSuccess, sendError } = require("../utils/apiResponse");
 const { verifyGoogleCredential, signAppToken } = require("../utils/auth");
 const { requireAuth } = require("../middleware/auth");
+const { upsertUser, isDatabaseConfigured } = require("../services/databaseService");
 
 const router = express.Router();
 
@@ -27,11 +28,12 @@ router.get("/config", (_req, res) => {
       google_client_id: process.env.GOOGLE_CLIENT_ID || null,
       auth_enabled: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.JWT_SECRET),
       dev_login_enabled: devLoginEnabled,
+      database_enabled: isDatabaseConfigured(),
     },
   });
 });
 
-router.post("/dev-login", (req, res) => {
+router.post("/dev-login", async (req, res) => {
   if (!isDevLoginEnabled()) {
     return sendError(res, {
       status: 403,
@@ -53,12 +55,27 @@ router.post("/dev-login", (req, res) => {
       email_verified: true,
     };
 
-    const token = signAppToken(user);
+    const persistedUser = await upsertUser(user).catch((error) => {
+      console.error("[AUTH_DB_WARNING]", error.message);
+      return null;
+    });
+
+    const authUser = persistedUser
+      ? {
+          google_id: persistedUser.google_id,
+          email: persistedUser.email,
+          name: persistedUser.name,
+          picture: persistedUser.picture,
+          email_verified: persistedUser.email_verified,
+        }
+      : user;
+
+    const token = signAppToken(authUser);
 
     return sendSuccess(res, {
       data: {
         token,
-        user,
+        user: authUser,
       },
       message: "Dev login berhasil.",
     });
@@ -84,12 +101,26 @@ router.post("/google", async (req, res) => {
 
   try {
     const user = await verifyGoogleCredential(credential);
-    const token = signAppToken(user);
+    const persistedUser = await upsertUser(user).catch((error) => {
+      console.error("[AUTH_DB_WARNING]", error.message);
+      return null;
+    });
+
+    const authUser = persistedUser
+      ? {
+          google_id: persistedUser.google_id,
+          email: persistedUser.email,
+          name: persistedUser.name,
+          picture: persistedUser.picture,
+          email_verified: persistedUser.email_verified,
+        }
+      : user;
+    const token = signAppToken(authUser);
 
     return sendSuccess(res, {
       data: {
         token,
-        user,
+        user: authUser,
       },
     });
   } catch (error) {

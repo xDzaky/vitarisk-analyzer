@@ -18,6 +18,7 @@ const hospitalsRoutes     = require("./routes/hospitals");
 const authRoutes          = require("./routes/auth");
 const chatRoutes          = require("./routes/chat");
 const { sendSuccess, sendError } = require("./utils/apiResponse");
+const { initDatabase, getDatabaseStatus } = require("./services/databaseService");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -75,6 +76,7 @@ app.get("/health", (_req, res) => {
       version: "1.0.0",
       timestamp: new Date().toISOString(),
       flask_url: process.env.FLASK_URL || "http://localhost:5001",
+      database: getDatabaseStatus(),
     },
   });
 });
@@ -123,6 +125,19 @@ const server = app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
   console.log(`   Flask ML API → ${process.env.FLASK_URL || "http://localhost:5001"}`);
   console.log(`   Frontend static → ${HAS_FRONTEND ? FRONTEND_DIR : "not available"}`);
+
+  initDatabase()
+    .then((status) => {
+      if (!status.configured) {
+        console.log("   Database → not configured");
+        return;
+      }
+
+      console.log("   Database → connected");
+    })
+    .catch((error) => {
+      console.error(`   Database → connection failed (${error.message})`);
+    });
 });
 
 let shuttingDown = false;

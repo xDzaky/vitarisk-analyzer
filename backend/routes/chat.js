@@ -23,7 +23,7 @@ const chatLimiter = rateLimit({
 
 router.use(chatLimiter);
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const validationErrors = validateChatPayload(req.body);
   if (validationErrors.length > 0) {
     return sendError(res, {
@@ -37,7 +37,7 @@ router.post("/", (req, res) => {
   const { message, context = {} } = req.body;
 
   try {
-    const response = getChatResponse(req.body);
+    const response = await getChatResponse(req.body);
 
     console.info("[CHATBOT]", JSON.stringify({
       message,
