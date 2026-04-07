@@ -1,3 +1,4 @@
+const axios = require("axios");
 const knowledgeConfig = require("../data/chatbotKnowledge.json");
 const { TIPS } = require("../data/recommendationTips");
 
@@ -219,6 +220,36 @@ const VAPE_QUIT_PATTERNS = [
   "berhenti vape",
   "stop vape",
   "cara berhenti vape",
+];
+
+const PROJECT_REFERENCE_PATTERNS = [
+  "vitarisk",
+  "aplikasi ini",
+  "website ini",
+  "web ini",
+  "project ini",
+  "fitur aplikasi",
+  "fitur web",
+  "cara pakai aplikasi",
+  "siapa yang buat",
+  "dibuat oleh siapa",
+];
+
+const META_INFO_INTENTS = [
+  "project_creator_info",
+  "about_project",
+  "project_tech_info",
+  "app_features",
+  "app_usage",
+  "data_privacy",
+];
+
+const EXPLICIT_RISK_GROUP_PATTERNS = [
+  "kelompok berisiko",
+  "siapa yang berisiko",
+  "siapa saja yang berisiko",
+  "orang yang berisiko",
+  "faktor risiko tinggi",
 ];
 
 const NOODLE_NIGHT_PATTERNS = [
@@ -1261,6 +1292,7 @@ function scoreEntry(entry, normalizedMessage, tokens, disease, riskLevel, curren
   const asksAgeInput = AGE_INPUT_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
   const asksPcos = PCOS_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
   const asksQuitVape = VAPE_QUIT_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
+  const asksProjectContext = PROJECT_REFERENCE_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
 
   for (const phrase of entry.question_patterns || []) {
     if (normalizedMessage.includes(normalizeText(phrase))) {
@@ -1274,7 +1306,12 @@ function scoreEntry(entry, normalizedMessage, tokens, disease, riskLevel, curren
       continue;
     }
 
-    if (normalizedMessage.includes(normalizedKeyword)) {
+    const isShortSingleKeyword = !normalizedKeyword.includes(" ") && normalizedKeyword.length <= 4;
+    const keywordMatches = isShortSingleKeyword
+      ? tokens.includes(normalizedKeyword)
+      : normalizedMessage.includes(normalizedKeyword);
+
+    if (keywordMatches) {
       score += normalizedKeyword.includes(" ") ? 8 : 4;
     }
   }
@@ -1370,8 +1407,12 @@ function scoreEntry(entry, normalizedMessage, tokens, disease, riskLevel, curren
   }
 
   if ((asksFoodOrDrink || asksSleep || asksDailyHabit || asksExercise || asksSymptomOrTest) &&
-      ["project_creator_info", "about_project", "project_tech_info", "app_features", "app_usage"].includes(entry.intent)) {
+      (META_INFO_INTENTS.includes(entry.intent) || entry.category === "project")) {
     score -= 18;
+  }
+
+  if ((META_INFO_INTENTS.includes(entry.intent) || entry.category === "project") && !asksProjectContext) {
+    score -= 30;
   }
 
   if (asksExercise && entry.intent === "exercise_guidance") {
@@ -1497,7 +1538,142 @@ function buildFallbackResponse(disease) {
   };
 }
 
-function getChatResponse({ message, context = {} }) {
+function shouldUseAIFallback(response, message = "") {
+  if (!response) {
+    return true;
+  }
+
+  if (response.matched_topic === "clarification_request") {
+    return false;
+  }
+
+  if (response.matched_topic === "unsupported_question") {
+    return true;
+  }
+
+  const normalizedMessage = normalizeText(message);
+  const asksProjectContext = PROJECT_REFERENCE_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
+  if ((META_INFO_INTENTS.includes(response.matched_topic) || response.matched_topic === "app_pricing") && !asksProjectContext) {
+    return true;
+  }
+
+  const asksExplicitRiskGroup = EXPLICIT_RISK_GROUP_PATTERNS.some((pattern) => normalizedMessage.includes(pattern));
+  if (response.matched_topic === "high_risk_population" && !asksExplicitRiskGroup) {
+    return true;
+  }
+
+  return Number(response.confidence || 0) < 0.6;
+}
+
+function getChatProviderConfig() {
+  const provider = String(process.env.CHATBOT_PROVIDER || "").toLowerCase().trim();
+  const model = process.env.CHATBOT_MODEL || "llama-3.3-70b-versatile";
+
+  if (provider === "groq" && process.env.GROQ_API_KEY) {
+    return {
+      provider: "groq",
+      model,
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  if (provider === "openrouter" && process.env.OPENROUTER_API_KEY) {
+    return {
+      provider: "openrouter",
+      model: process.env.CHATBOT_MODEL || "openai/gpt-4o-mini",
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+  }
+
+  return null;
+}
+
+async function fetchAIFallbackResponse({ message, context = {}, disease }) {
+  const config = getChatProviderConfig();
+  if (!config) {
+    return null;
+  }
+
+  const diseaseLabel = disease ? getDiseaseLabel(disease) : "kesehatan umum";
+  const riskLevel = getRiskLevel(context);
+
+  const systemPrompt = [
+    "Kamu adalah chatbot edukasi kesehatan untuk aplikasi Vitarisk.",
+    "Jawab dalam Bahasa Indonesia yang natural, singkat, jelas, dan aman.",
+    "Fokus pada edukasi umum, bukan diagnosis pasti atau resep obat.",
+    "Kalau pertanyaan terlalu personal atau berisiko, sarankan periksa ke tenaga kesehatan.",
+    "Kalau pengguna menanyakan makanan, minuman, tidur, olahraga, atau kebiasaan, jawab langsung ke inti pertanyaan.",
+    "Jangan menyebut bahwa kamu model AI atau provider eksternal.",
+  ].join(" ");
+
+  const userPrompt = [
+    `Konteks penyakit: ${diseaseLabel}.`,
+    riskLevel ? `Level risiko user saat ini: ${riskLevel}.` : "",
+    "Berikan jawaban edukatif yang ringkas dan relevan.",
+    `Pertanyaan user: ${message}`,
+  ].filter(Boolean).join(" ");
+
+  try {
+    const { data } = await axios.post(
+      config.url,
+      {
+        model: config.model,
+        temperature: 0.2,
+        max_tokens: 220,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      },
+      {
+        headers: config.headers,
+        timeout: 15000,
+      }
+    );
+
+    const answer = data?.choices?.[0]?.message?.content?.trim();
+    if (!answer) {
+      return null;
+    }
+
+    return {
+      answer,
+      matched_topic: "ai_fallback",
+      confidence: 0.72,
+      suggestions: disease
+        ? [
+            `Apa arti risiko ${getDiseaseLabel(disease)} saya?`,
+            "Kebiasaan apa yang paling penting dibenahi dulu?",
+            "Kapan saya perlu ke dokter?",
+          ]
+        : [
+            "Apa arti hasil prediksi saya?",
+            "Kebiasaan apa yang paling penting dibenahi dulu?",
+            "Kapan saya perlu ke dokter?",
+          ],
+      disclaimer: "Jawaban ini bersifat edukatif dan perlu dikonfirmasi dengan tenaga kesehatan bila keluhan menetap.",
+      escalation: {
+        needed: false,
+        reason: null,
+        action: riskLevel ? buildWhenToSeeDoctor(riskLevel) : null,
+      },
+      provider: config.provider,
+    };
+  } catch (error) {
+    console.error("[CHATBOT_AI_FALLBACK_ERROR]", error.message);
+    return null;
+  }
+}
+
+async function getChatResponse({ message, context = {} }) {
   const resolvedMessage = resolveClarificationMessage(message, context);
   const normalized = normalizeText(resolvedMessage);
 
@@ -1532,10 +1708,31 @@ function getChatResponse({ message, context = {} }) {
   if (bestEntry && bestScore >= 6) {
     const response = buildEntryResponse(bestEntry, disease, riskLevel, resolvedMessage);
     response.confidence = Math.min(0.95, Number((bestScore / 20).toFixed(2)));
-    return response;
+    if (!shouldUseAIFallback(response, resolvedMessage)) {
+      return response;
+    }
+
+    const aiFallback = await fetchAIFallbackResponse({
+      message: resolvedMessage,
+      context,
+      disease,
+    });
+
+    return aiFallback || buildFallbackResponse(disease);
   }
 
-  return buildFallbackResponse(disease);
+  const fallbackResponse = buildFallbackResponse(disease);
+  if (!shouldUseAIFallback(fallbackResponse, resolvedMessage)) {
+    return fallbackResponse;
+  }
+
+  const aiFallback = await fetchAIFallbackResponse({
+    message: resolvedMessage,
+    context,
+    disease,
+  });
+
+  return aiFallback || fallbackResponse;
 }
 
 module.exports = {

@@ -1,0 +1,21 @@
+# Root dependencies
+node_modules/
+
+# Env files
+.env
+*.env
+!backend/.env.example
+!frontend/.env.example
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS / editor files
+.DS_Store
+.vscode/
+.idea/
