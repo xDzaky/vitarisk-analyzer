@@ -1,4 +1,3 @@
-import icon from "../assets/icon.svg";
 import Profile from "../assets/Profile.png";
 import Doctor from "../assets/doctor.png";
 import { useNavigate } from "react-router-dom";
@@ -125,17 +124,17 @@ export default function LandingPage() {
       {/* Bagian Navbar  */}
       <nav className="top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm flex items-center px-10 py-4 fixed left-0 ">
         <div className="flex items-center gap-3">
-          <img src={icon} className="h-9" alt="logo" />
+          <img src="/icons2.svg" className="h-9" alt="logo" />
         </div>
         <ul className="hidden md:flex gap-8 font-medium text-pine-green absolute left-1/2 -translate-x-1/2">
           {menuItems.map((item) => (
             <li
               key={item.id}
               onClick={() => handleClick(item.id)}
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer transition-all border-b-2 ${
                 active === item.id
                   ? "border-b-2 border-pine-green text-dark-green-teal"
-                  : "hover:text-dark-green-teal"
+                  : "border-transparent hover:text-dark-green-teal"
               }`}
             >
               {item.name}
@@ -653,7 +652,7 @@ export default function LandingPage() {
       >
         <div className="max-w-10xl mx-auto grid md:grid-cols-4 gap-10">
           <div>
-            <img src={icon} className="h-8 mb-4" alt="logo" />
+            <img src="/icons2.svg" className="h-8 mb-4" alt="logo" />
             <p className="text-gray-500 text-sm leading-relaxed">
               Platform kesehatan digital yang memudahkan deteksi dini dan
               membuat setiap orang lebih peduli dengan kesehatan mereka.

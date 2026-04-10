@@ -55,7 +55,7 @@ export default function KolestrolPage() {
   return (
     <div className="bg-[#f9faf7]">
       <nav className="flex items-center justify-between py-4 px-15 sticky top-0 bg-[#f9faf7] z-10 shadow-sm ">
-        <a href="/" className="flex items-center gap-4">
+        <a href="/" className="flex items-center gap-4 hover:bg-black/10 pr-2.5 rounded-md transition text-dark-green-teal font-semibold">
           <ChevronLeft />
           Kembali
         </a>
