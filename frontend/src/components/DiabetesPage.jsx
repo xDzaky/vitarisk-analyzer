@@ -177,6 +177,7 @@ export default function DiabetesPage() {
               onChange={(e) => setBmi(e.target.value)}
               min={10}
               max={50}
+              step={0.1}
               placeholder="Contoh : 23.5"
               required
               className="border-2  border-mint-green/60 rounded-md p-3 my-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
@@ -237,7 +238,7 @@ export default function DiabetesPage() {
                     className="hidden"
                   />
                   <div
-                    className={`border w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
+                    className={`border-2 w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
                       riwayat === "ya"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-whit hover:bg-gray-100"
@@ -260,7 +261,7 @@ export default function DiabetesPage() {
                     className="hidden"
                   />
                   <div
-                    className={`border w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
+                    className={`border-2 w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
                       riwayat === "tidak"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-whit hover:bg-gray-100"

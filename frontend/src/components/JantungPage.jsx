@@ -351,13 +351,13 @@ export default function JantungPage() {
                   <input
                     type="radio"
                     name="nyeriDada"
-                    value={exangina}
+                    value="ya"
                     required
                     onChange={(e) => setExangina(e.target.value)}
                     className="hidden"
                   />
                   <div
-                    className={`border w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
+                    className={`border-2 w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
                       exangina === "ya"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-whit hover:bg-gray-100"
@@ -380,7 +380,7 @@ export default function JantungPage() {
                     className="hidden"
                   />
                   <div
-                    className={`border w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
+                    className={`border-2 w-full py-3 rounded-md border-[#adccbf] font-medium text-black/50 transition  flex justify-center items-center gap-2 px-8 ${
                       exangina === "tidak"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-whit hover:bg-gray-100"
