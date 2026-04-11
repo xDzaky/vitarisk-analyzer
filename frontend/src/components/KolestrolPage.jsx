@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, Venus, Mars } from "lucide-react";
-import Profile from "../assets/profile.png";
+import Profile from "../assets/Profile.png";
 import IconShield from "../assets/Container.svg";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
