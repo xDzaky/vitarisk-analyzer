@@ -6,6 +6,10 @@ const { upsertUser, isDatabaseConfigured } = require("../services/databaseServic
 
 const router = express.Router();
 
+function isConfigError(error) {
+  return /belum diatur/i.test(error?.message || "");
+}
+
 function isDevLoginEnabled() {
   const flag = (process.env.ALLOW_DEV_LOGIN || "").toLowerCase().trim();
 
@@ -81,7 +85,7 @@ router.post("/dev-login", async (req, res) => {
     });
   } catch (error) {
     return sendError(res, {
-      status: 500,
+      status: isConfigError(error) ? 503 : 500,
       code: "DEV_LOGIN_FAILED",
       message: error.message || "Dev login gagal.",
     });
@@ -125,8 +129,8 @@ router.post("/google", async (req, res) => {
     });
   } catch (error) {
     return sendError(res, {
-      status: 401,
-      code: "GOOGLE_AUTH_FAILED",
+      status: isConfigError(error) ? 503 : 401,
+      code: isConfigError(error) ? "AUTH_CONFIG_MISSING" : "GOOGLE_AUTH_FAILED",
       message: error.message || "Verifikasi akun Google gagal.",
     });
   }

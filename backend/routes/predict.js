@@ -12,6 +12,8 @@ const axios   = require("axios");
 const router  = express.Router();
 const { sendSuccess, sendError } = require("../utils/apiResponse");
 const { validatePredictionPayload } = require("../utils/validateRequest");
+const { attachOptionalUser } = require("../middleware/auth");
+const { savePredictionHistory } = require("../services/databaseService");
 
 const FLASK_URL = () => process.env.FLASK_URL || "http://localhost:5001";
 const TIMEOUT_MS = 10_000;
@@ -31,7 +33,7 @@ router.param("disease", (req, res, next, disease) => {
 });
 
 // ─── POST /api/predict/:disease ──────────────────────────────────────
-router.post("/:disease", async (req, res) => {
+router.post("/:disease", attachOptionalUser, async (req, res) => {
   const { disease } = req.params;
   const body = req.body;
 
@@ -63,11 +65,28 @@ router.post("/:disease", async (req, res) => {
       }
     );
 
+    let historyId = null;
+    if (req.user?.sub) {
+      const history = await savePredictionHistory({
+        googleId: req.user.sub,
+        disease,
+        inputPayload: body,
+        resultPayload: flaskRes.data,
+      }).catch((error) => {
+        console.error("[PREDICTION_HISTORY_ERROR]", error.message);
+        return null;
+      });
+
+      historyId = history?.id || null;
+    }
+
     return sendSuccess(res, {
       data: flaskRes.data,
       meta: {
         disease,
         ml_service_url: FLASK_URL(),
+        history_saved: Boolean(historyId),
+        history_id: historyId,
       },
     });
   } catch (err) {

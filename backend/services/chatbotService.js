@@ -24,6 +24,9 @@ const PAGE_DISEASE_MAP = {
   "/choice/jantung": "heart",
   "/choice/diabetes": "diabetes",
   "/choice/kolestrol": "cholesterol",
+  "/landing/deteksi-jantung": "heart",
+  "/landing/deteksi-diabetes": "diabetes",
+  "/landing/deteksi-kolestrol": "cholesterol",
 };
 
 const DANGEROUS_SYMPTOM_PATTERNS = [

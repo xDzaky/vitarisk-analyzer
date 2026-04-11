@@ -19,6 +19,7 @@ import {
   Stethoscope,
   TestTubeDiagonal,
 } from "lucide-react";
+import { apiRequest, getStoredToken } from "../lib/api";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ export default function LandingPage() {
     { role: "bot", text: "Halo! Ada yang bisa saya bantu hari ini?" },
   ]);
   const [loading, setLoading] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [clarificationState, setClarificationState] = useState(null);
 
   const menuItems = [
     { name: "Beranda", id: "home" },
@@ -91,22 +94,31 @@ export default function LandingPage() {
     setMessages((prev) => [...prev, userMessage]);
     setChatInput("");
     setLoading(true);
+    setChatError("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/chat", {
+      const result = await apiRequest("/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: messageToSend }),
+        body: JSON.stringify({
+          message: messageToSend,
+          context: clarificationState
+            ? { clarification_state: clarificationState }
+            : {},
+        }),
       });
-
-      const data = await res.json();
-
-      const botMessage = { role: "bot", text: data.reply };
+      const botMessage = {
+        role: "bot",
+        text: result?.data?.answer || "Maaf, saya belum bisa menjawab sekarang.",
+        suggestions: result?.data?.suggestions || [],
+      };
       setMessages((prev) => [...prev, botMessage]);
+      setClarificationState(result?.data?.clarification?.state || null);
     } catch (err) {
       console.error(err);
+      setChatError(err.message || "Chatbot sedang tidak bisa diakses.");
       setMessages((prev) => [
         ...prev,
         {
@@ -117,6 +129,10 @@ export default function LandingPage() {
     }
 
     setLoading(false);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setChatInput(suggestion);
   };
 
   return (
@@ -146,7 +162,7 @@ export default function LandingPage() {
           <img
             src={Profile}
             alt="Profile"
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate(getStoredToken() ? "/profile" : "/login")}
             className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition"
           />
 
@@ -199,7 +215,10 @@ export default function LandingPage() {
             risiko kesehatan berdasarkan kondisi dan kebiasaanmu.
           </p>
           <div className="flex gap-4 relative z-10">
-            <button className="bg-[#295f4e] text-white px-7 py-3 rounded-2xl flex gap-3 items-center">
+            <button
+              onClick={() => handleClick("Deteksi")}
+              className="bg-[#295f4e] text-white px-7 py-3 rounded-2xl flex gap-3 items-center"
+            >
               Mulai Deteksi <ArrowRight size={18} />
             </button>
             <button
@@ -550,6 +569,22 @@ export default function LandingPage() {
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{message.text}</p>
+                      {message.role === "bot" &&
+                      Array.isArray(message.suggestions) &&
+                      message.suggestions.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {message.suggestions.slice(0, 3).map((suggestion) => (
+                            <button
+                              key={suggestion}
+                              type="button"
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              className="rounded-full bg-[#295f4e]/10 px-3 py-1 text-xs text-[#295f4e]"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ))}
@@ -567,6 +602,9 @@ export default function LandingPage() {
               </div>
 
               <div className="pt-4">
+                {chatError ? (
+                  <p className="mb-3 text-sm text-red-100">{chatError}</p>
+                ) : null}
                 <div className="flex items-end gap-3">
                   <input
                     ref={null}

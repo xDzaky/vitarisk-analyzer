@@ -24,6 +24,24 @@ function requireAuth(req, res, next) {
   }
 }
 
+function attachOptionalUser(req, _res, next) {
+  const token = readBearerToken(req.headers.authorization || "");
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    req.user = verifyAppToken(token);
+  } catch (_error) {
+    req.user = null;
+  }
+
+  return next();
+}
+
 module.exports = {
+  attachOptionalUser,
   requireAuth,
 };

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Profile from "../assets/Profile.png";
+import { apiRequest } from "../lib/api";
 export default function DiabetesPage() {
   const [umur, setUmur] = useState("");
   const [gender, setGender] = useState("");
@@ -20,14 +21,18 @@ export default function DiabetesPage() {
   const [makananManis, setMakananManis] = useState("");
   const [olahraga, setOlahraga] = useState("");
   const [bmi, setBmi] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
+    setSubmitting(true);
 
     const payload = {
       age: Number(umur),
-      sex: gender,
+      sex: gender === "male" ? "laki-laki" : "perempuan",
       glucose: Number(gula),
       blood_pressure: Number(sistolik),
       family_history: riwayat,
@@ -39,15 +44,13 @@ export default function DiabetesPage() {
     console.log(payload); // cek dulu sebelum kirim
 
     try {
-      const res = await fetch("http://localhost:3000/api/predict/diabetes", {
+      const data = await apiRequest("/predict/diabetes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
       navigate("/result", {
         state: {
           ...data,
@@ -57,6 +60,9 @@ export default function DiabetesPage() {
       console.log("HASIL:", data);
     } catch (err) {
       console.error(err);
+      setSubmitError(err.message || "Prediksi diabetes gagal diproses.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -88,6 +94,11 @@ export default function DiabetesPage() {
         </p>
       </header>
       <form onSubmit={handleSubmit} type="post" className="m-5 h-full">
+        {submitError ? (
+          <div className="mx-15 mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
+            {submitError}
+          </div>
+        ) : null}
         <div>
           <div className="mx-15 rounded-xl pb-8 bg-[#f3f4f1]">
             <h2 className="font-bold p-5 px-20 text-sub-title mb-3">
@@ -326,9 +337,10 @@ export default function DiabetesPage() {
             </div>
             <button
               type="submit"
-              className="bg-pine-green py-2 px-10 flex gap-3 rounded-xl mx-45 text-white hover:scale-105 transition group"
+              disabled={submitting}
+              className="bg-pine-green py-2 px-10 flex gap-3 rounded-xl mx-45 text-white hover:scale-105 transition group disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
             >
-              Lihat hasil prediksi{" "}
+              {submitting ? "Memproses..." : "Lihat hasil prediksi"}{" "}
               <ArrowRight className="group-hover:translate-x-2 transition" />
             </button>
           </div>

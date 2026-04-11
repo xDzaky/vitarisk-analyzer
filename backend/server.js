@@ -17,6 +17,7 @@ const recommendRoutes     = require("./routes/recommendations");
 const hospitalsRoutes     = require("./routes/hospitals");
 const authRoutes          = require("./routes/auth");
 const chatRoutes          = require("./routes/chat");
+const historyRoutes       = require("./routes/history");
 const { sendSuccess, sendError } = require("./utils/apiResponse");
 const { initDatabase, getDatabaseStatus } = require("./services/databaseService");
 
@@ -86,6 +87,7 @@ app.use("/api/recommendations", recommendRoutes);
 app.use("/api/hospitals",       hospitalsRoutes);
 app.use("/api/auth",            authRoutes);
 app.use("/api/chat",            chatRoutes);
+app.use("/api/history",         historyRoutes);
 
 app.get("/", (_req, res) => {
   if (HAS_FRONTEND) {
