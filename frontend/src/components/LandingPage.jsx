@@ -1,8 +1,7 @@
 import ProfileAvatar from "./ProfileAvatar";
 import Doctor from "../assets/doctor.png";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { usePWAInstall } from "../hooks/usePWAInstall";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowRight,
   Bot,
@@ -17,19 +16,26 @@ import {
   HeartPulse,
   LogOut,
   Menu,
+  SendHorizonal,
   Stethoscope,
   TestTubeDiagonal,
   X,
 } from "lucide-react";
-import { getStoredToken } from "../lib/api";
+import { apiRequest, getStoredToken } from "../lib/api";
 import { logoutSession } from "../lib/session";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [active, setActive] = useState("home");
+  const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState([
+    { role: "bot", text: "Halo! Ada yang bisa saya bantu hari ini?" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [clarificationState, setClarificationState] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showIOSGuide, setShowIOSGuide] = useState(false);
-  const { isInstallable, isInstalled, isIOS, triggerInstall } = usePWAInstall();
+  const messagesEndRef = useRef(null);
 
   const loggedIn = !!getStoredToken();
 
@@ -88,8 +94,56 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const openChatbot = () => {
-    window.dispatchEvent(new Event("vitarisk:open-chatbot"));
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  const handleSendChat = async () => {
+    const messageToSend = chatInput.trim();
+    if (!messageToSend) return;
+
+    const userMessage = { role: "user", text: messageToSend };
+    setMessages((prev) => [...prev, userMessage]);
+    setChatInput("");
+    setLoading(true);
+    setChatError("");
+
+    try {
+      const result = await apiRequest("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: messageToSend,
+          context: clarificationState
+            ? { clarification_state: clarificationState }
+            : {},
+        }),
+      });
+      const botMessage = {
+        role: "bot",
+        text: result?.data?.answer || "Maaf, saya belum bisa menjawab sekarang.",
+        suggestions: result?.data?.suggestions || [],
+      };
+      setMessages((prev) => [...prev, botMessage]);
+      setClarificationState(result?.data?.clarification?.state || null);
+    } catch (err) {
+      console.error(err);
+      setChatError(err.message || "Chatbot sedang tidak bisa diakses.");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "bot",
+          text: "Terjadi error, coba lagi ya. Pastikan backend berjalan di port 3000.",
+        },
+      ]);
+    }
+
+    setLoading(false);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setChatInput(suggestion);
   };
 
   return (
@@ -452,7 +506,7 @@ export default function LandingPage() {
 
       {/* ─── CHAT AI ─── */}
       <div className="bg-[#295f4e] text-white py-16 md:py-24 px-4 md:px-10">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start">
           {/* Left content */}
           <div className="text-left">
             <h2 className="text-2xl md:text-3xl font-bold mb-6">
@@ -472,39 +526,154 @@ export default function LandingPage() {
 
             {/* Mobile inline chat */}
             <div className="md:hidden mt-8 bg-white/20 backdrop-blur-2xl rounded-3xl p-5">
-              <div className="rounded-3xl bg-white/95 p-4 text-[#295f4e] shadow-sm">
-                <p className="text-sm leading-relaxed">
-                  Punya pertanyaan soal hasil cek atau kesehatan dasar? Buka
-                  chatbot VitaRisk lewat tombol di kanan bawah.
-                </p>
+              <div className="space-y-4 mb-4 h-52 overflow-y-auto pr-1 custom-scrollbar">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+                        message.role === "user"
+                          ? "bg-[#295f4e] text-white border border-white/20"
+                          : "bg-white text-[#295f4e]"
+                      }`}
+                    >
+                      {message.text}
+                      {message.role === "bot" &&
+                        Array.isArray(message.suggestions) &&
+                        message.suggestions.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {message.suggestions.slice(0, 2).map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => handleSuggestionClick(s)}
+                                className="rounded-full bg-[#295f4e]/10 px-3 py-1 text-xs text-[#295f4e]"
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white text-[#295f4e] px-4 py-3 rounded-2xl text-sm flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-[#295f4e] rounded-full animate-spin"></div>
+                      AI sedang mengetik...
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !loading && handleSendChat()}
+                  placeholder="Ketik pertanyaanmu..."
+                  disabled={loading}
+                  className="flex-1 bg-white/90 rounded-2xl px-4 py-3 text-gray-800 placeholder-gray-400 text-sm"
+                />
                 <button
-                  type="button"
-                  onClick={openChatbot}
-                  className="mt-4 w-full rounded-2xl bg-[#295f4e] px-4 py-3 text-sm font-medium text-white"
+                  onClick={handleSendChat}
+                  disabled={loading || !chatInput.trim()}
+                  className="bg-white text-[#295f4e] p-3 rounded-2xl disabled:opacity-50"
                 >
-                  Buka Chatbot
+                  <SendHorizonal size={18} />
                 </button>
               </div>
             </div>
 
             <button
-              onClick={openChatbot}
+              onClick={() => handleClick("sumberData")}
               className="hidden md:inline-block bg-white text-[#295f4e] px-6 mt-12 py-3 rounded-xl font-medium"
             >
               Chat AI Sekarang
             </button>
           </div>
 
-          {/* Desktop chat widget — screenshot preview */}
-          <div className="hidden md:flex items-center justify-center w-full">
-            <div className="relative flex items-center justify-center">
-              {/* Glow behind the image */}
-              <div className="absolute -inset-6 rounded-[2.5rem] bg-white/15 blur-3xl" />
-              <img
-                src="/chatbot-tampilan.png"
-                alt="Tampilan Chatbot VitaRisk"
-                className="relative z-10 w-96 rounded-[1.75rem] shadow-[0_32px_72px_rgba(0,0,0,0.4)] ring-1 ring-white/25"
-              />
+          {/* Desktop chat widget */}
+          <div className="hidden md:block">
+            <div className="bg-white/25 backdrop-blur-2xl rounded-4xl p-8">
+              <div className="space-y-4 mb-6 h-64 overflow-y-auto pr-2 custom-scrollbar">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] p-4 rounded-3xl shadow-md ${
+                        message.role === "user"
+                          ? "bg-[#295f4e] text-white"
+                          : "bg-white text-[#295f4e]"
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      {message.role === "bot" &&
+                        Array.isArray(message.suggestions) &&
+                        message.suggestions.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {message.suggestions.slice(0, 3).map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                type="button"
+                                onClick={() => handleSuggestionClick(suggestion)}
+                                className="rounded-full bg-[#295f4e]/10 px-3 py-1 text-xs text-[#295f4e]"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-200 text-[#295f4e] px-4 py-3 rounded-3xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-gray-400 border-t-[#295f4e] rounded-full animate-spin"></div>
+                        AI sedang mengetik...
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="pt-4">
+                {chatError && <p className="mb-3 text-sm text-red-100">{chatError}</p>}
+                <div className="flex items-end gap-3">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !loading && handleSendChat()}
+                    placeholder="Ketik pertanyaan kesehatanmu disini..."
+                    disabled={loading}
+                    className="flex-1 bg-gray-100 border border-gray-300 rounded-3xl px-5 py-4 text-gray-800 placeholder-gray-400"
+                  />
+                  <button
+                    onClick={handleSendChat}
+                    disabled={loading || !chatInput.trim()}
+                    className="bg-[#295f4e] text-white px-6 py-4 rounded-3xl font-semibold shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                        Tunggu
+                      </>
+                    ) : (
+                      <>
+                        Kirim <SendHorizonal size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -577,53 +746,12 @@ export default function LandingPage() {
 
           <div>
             <h4 className="font-semibold mb-3 text-gray-900 text-sm md:text-base">Download App</h4>
-            <p className="text-gray-500 text-xs md:text-sm mb-3">
-              Deteksi kesehatan mudah di genggaman Anda. Install sebagai aplikasi di Windows, Android, iOS, dan Linux.
+            <p className="text-gray-500 text-xs md:text-sm mb-4">
+              Deteksi kesehatan mudah di genggaman Anda.
             </p>
-
-            {isInstalled ? (
-              <div className="flex items-center gap-2 rounded-xl bg-[#edf7f2] border border-[#b7dbc9] px-3 py-2.5">
-                <span className="text-lg">✅</span>
-                <div>
-                  <p className="text-xs font-semibold text-[#295f4e]">Sudah Terinstall</p>
-                  <p className="text-[10px] text-gray-500">VitaRisk berjalan sebagai app</p>
-                </div>
-              </div>
-            ) : isIOS ? (
-              <div>
-                <button
-                  onClick={() => setShowIOSGuide((v) => !v)}
-                  className="w-full flex items-center justify-center gap-2 bg-black text-white py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                  Install di iPhone / iPad
-                </button>
-                {showIOSGuide && (
-                  <div className="mt-2 p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600 space-y-1">
-                    <p className="font-semibold text-gray-800 mb-1">Cara install di iOS:</p>
-                    <p>1. Buka di Safari</p>
-                    <p>2. Ketuk ikon <strong>Share</strong> (kotak dengan panah ↑)</p>
-                    <p>3. Pilih <strong>"Add to Home Screen"</strong></p>
-                    <p>4. Ketuk <strong>Add</strong></p>
-                  </div>
-                )}
-              </div>
-            ) : isInstallable ? (
-              <button
-                onClick={triggerInstall}
-                className="w-full flex items-center justify-center gap-2 bg-[#295f4e] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-[#214d3e] transition"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Install Aplikasi
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-200">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 shrink-0 text-[#295f4e]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                  <span>Buka di Chrome/Edge untuk install di Windows, Android, atau Linux</span>
-                </div>
-              </div>
-            )}
+            <button className="w-full bg-black text-white py-2 rounded-lg text-sm hover:opacity-90 transition">
+              Google Play
+            </button>
           </div>
         </div>
 

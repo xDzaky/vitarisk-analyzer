@@ -181,9 +181,9 @@ export default function KolestrolPage() {
                 onChange={(e) => setSistolik(e.target.value)}
                 placeholder="Contoh : 120"
                 required
-                className="border-2 border-mint-green/60 rounded-md p-3 mt-3 w-full pr-20 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
+                className="border-2 border-mint-green/60 rounded-md p-3 mt-3 w-full pr-16 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
               />
-              <span className="absolute right-3 top-[60%] -translate-y-1/2 text-black/60 text-xs sm:text-sm pointer-events-none">
+              <span className="absolute right-3 top-[60%] -translate-y-1/2 text-black/60 text-xs pointer-events-none">
                 mmHg
               </span>
             </div>
@@ -296,7 +296,7 @@ export default function KolestrolPage() {
           </div>
 
           {/* ─── FOOTER FORM ─── */}
-          <div className="mt-10 flex flex-col gap-4 border-t border-gray-300 pb-10 pt-5 sm:flex-row sm:items-center sm:justify-between lg:pr-56">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-10 border-t border-gray-300 mt-10 pt-5 gap-4">
             <div className="flex gap-2 items-center">
               <img src={IconShield} alt="" className="w-3 shrink-0" />
               <p className="text-[#8F6F6D] text-xs md:text-sm">

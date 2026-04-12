@@ -229,7 +229,10 @@ export default function DiabetesPage() {
                   required
                   className="border-2 border-mint-green/60 rounded-md p-3 mt-3 w-full pr-16 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
                 />
-                <span className="absolute right-3 top-[60%] -translate-y-1/2 text-black/50 text-xs sm:text-sm pointer-events-none">
+                {/* Desktop original */}
+                <span className="hidden md:inline absolute left-135 top-1/2">mmHg</span>
+                {/* Mobile */}
+                <span className="md:hidden absolute right-3 top-[60%] -translate-y-1/2 text-black/50 text-xs pointer-events-none">
                   mmHg
                 </span>
               </div>
@@ -297,7 +300,12 @@ export default function DiabetesPage() {
                   required
                   className="border-2 border-mint-green/60 rounded-md p-3 mt-3 w-full pr-16 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
                 />
-                <span className="absolute right-3 top-[60%] -translate-y-1/2 text-black/50 text-xs sm:text-sm pointer-events-none">
+                {/* Desktop original */}
+                <span className="hidden md:inline absolute left-135 translate-y-1/5 top-1/2">
+                  mg/dL
+                </span>
+                {/* Mobile */}
+                <span className="md:hidden absolute right-3 top-[60%] -translate-y-1/2 text-black/50 text-xs pointer-events-none">
                   mg/dL
                 </span>
               </div>
@@ -325,7 +333,7 @@ export default function DiabetesPage() {
           </div>
 
           {/* ── FOOTER FORM ── */}
-          <div className="flex flex-col gap-4 py-10 md:py-15 sm:flex-row sm:items-center sm:justify-between lg:pr-56">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-10 md:py-15 gap-4">
             <div className="flex gap-2 items-start sm:items-center">
               <img src={IconShield} alt="" className="w-3 mt-0.5 sm:mt-0 shrink-0" />
               <p className="text-[#8F6F6D] text-xs md:text-sm">
@@ -335,7 +343,7 @@ export default function DiabetesPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-pine-green py-2 px-10 flex items-center justify-center gap-3 rounded-xl text-white hover:scale-105 transition group disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 w-full sm:w-auto"
+              className="bg-pine-green py-2 px-10 flex items-center justify-center gap-3 rounded-xl md:mx-45 text-white hover:scale-105 transition group disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 w-full sm:w-auto"
             >
               {submitting ? "Memproses..." : "Lihat hasil prediksi"}
               <ArrowRight className="group-hover:translate-x-2 transition" />

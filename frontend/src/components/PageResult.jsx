@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Send, ArrowRight } from "lucide-react";
 import HosipitalPng from "../assets/hospital.jpg";
 import { TriangleAlert } from "lucide-react";
-import { apiRequest } from "../lib/api";
+import { API_BASE_URL, apiRequest } from "../lib/api";
 import ProfileAvatar from "./ProfileAvatar";
 
 const LAST_LOCATION_STORAGE_KEY = "vitarisk:last-known-location";
@@ -89,12 +89,14 @@ export default function PageResult() {
   const [locationNote, setLocationNote] = useState("");
 
   const fetchHospitals = async (lat, lng, note = "") => {
-    const result = await apiRequest(`/hospitals?lat=${lat}&lng=${lng}`, {
-      auth: false,
-    });
+    const res = await fetch(`${API_BASE_URL}/hospitals?lat=${lat}&lng=${lng}`);
+    if (!res.ok) throw new Error("API error");
+
+    const result = await res.json();
     setHospitals(result.data.hospitals.slice(0, 2));
     setLocationError(null);
     setLocationNote(note);
+    console.log("HOSPITAL RESULT:", result);
   };
 
   const requestLocation = () =>

@@ -214,9 +214,9 @@ export default function JantungPage() {
                   onChange={(e) => setTekananDarah(e.target.value)}
                   placeholder="120"
                   required
-                  className="border-2 border-mint-green/60 rounded-md p-3 my-4 w-full focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 pr-20 text-sm"
+                  className="border-2 border-mint-green/60 rounded-md p-3 my-4 w-full focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 pr-16 text-sm"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-xs sm:text-sm pointer-events-none">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-xs pointer-events-none">
                   mmHg
                 </span>
               </div>
@@ -234,9 +234,9 @@ export default function JantungPage() {
                   onChange={(e) => setKolesterol(e.target.value)}
                   placeholder="170"
                   required
-                  className="border-2 border-mint-green/60 rounded-md my-4 p-3 w-full focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 pr-20 text-sm"
+                  className="border-2 border-mint-green/60 rounded-md my-4 p-3 w-full focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 pr-16 text-sm"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-xs sm:text-sm pointer-events-none">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-xs pointer-events-none">
                   mg/dL
                 </span>
               </div>
@@ -294,7 +294,7 @@ export default function JantungPage() {
                   required
                   className="border-2 border-mint-green/60 rounded-md p-2.5 w-full focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 pr-16 text-sm md:text-base"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-xs sm:text-sm pointer-events-none">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/50 text-sm pointer-events-none">
                   BPM
                 </span>
               </div>
@@ -421,7 +421,7 @@ export default function JantungPage() {
           </div>
 
           {/* ─── FOOTER FORM ─── */}
-          <div className="mt-10 flex flex-col gap-4 border-t border-gray-300 pt-5 md:mt-15 sm:flex-row sm:items-center sm:justify-between lg:pr-56">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-10 md:mt-15 border-t pt-5 border-gray-300 gap-4">
             <div className="flex gap-2 items-center">
               <img src={IconShield} alt="" className="w-3 shrink-0" />
               <p className="text-[#8F6F6D] text-xs md:text-sm">
