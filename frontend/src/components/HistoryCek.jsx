@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { apiRequest, clearStoredToken } from "../lib/api";
+import { logoutSession } from "../lib/session";
+
+import {
+  ChevronLeft,
+  LogOut,
+} from "lucide-react";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
+
   const [histories, setHistories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,6 +48,11 @@ const HistoryPage = () => {
     fetchHistories();
   }, []);
 
+  const handleLogout = async () => {
+    await logoutSession();
+    navigate("/login", { replace: true });
+  };
+
   const formatDisease = (disease) => {
     if (disease === "heart") return "Jantung";
     if (disease === "diabetes") return "Diabetes";
@@ -54,6 +65,8 @@ const HistoryPage = () => {
       day: "numeric",
       month: "long",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(dateString));
   };
 
@@ -68,102 +81,85 @@ const HistoryPage = () => {
     });
   };
 
-  const renderEmptyState = () => (
-    <div className="rounded-3xl border border-[#327E66]/15 bg-white p-8 text-center shadow-sm">
-      <p className="text-lg font-semibold text-gray-700">
-        Belum ada riwayat cek kesehatan
-      </p>
-      <p className="mt-2 text-sm text-gray-500">
-        Kamu belum pernah melakukan pemeriksaan. Hasil cek yang sudah dilakukan
-        nanti akan muncul di halaman ini.
-      </p>
-      <button
-        type="button"
-        onClick={() => navigate("/")}
-        className="mt-5 rounded-full bg-[#295f4e] px-5 py-2 text-white transition hover:bg-[#1f4a3c]"
-      >
-        Mulai Cek Sekarang
-      </button>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="relative flex items-center justify-between px-7 py-4 bg-white shadow-sm top-0 z-50">
+      {/* Navbar Responsif */}
+      <div className="relative flex items-center justify-between px-4 md:px-7 py-4 bg-white shadow-sm top-0 z-50">
         <div className="flex items-center gap-3">
           <Link
             to="/"
-            className="flex gap-3 text-lg font-medium text-[#295f4e] items-center px-3 py-1 rounded-xl"
+            className="flex items-center gap-2 text-lg font-medium text-[#295f4e] px-2 py-1 rounded-xl hover:text-[#295f4e]/75 transition"
           >
-            <ChevronLeft size={22} /> Kembali
+            <ChevronLeft size={22} />
+            <span className="hidden sm:inline">Kembali</span>
           </Link>
         </div>
-
         <img
           src="/icons2.svg"
           alt="logo"
           className="h-7 absolute left-1/2 -translate-x-1/2"
         />
-
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
-            onClick={() => navigate("/history")}
-            className="bg-[#295f4e] text-white px-5 py-2 rounded-full hover:bg-[#1f4a3c] transition"
+            onClick={handleLogout}
+            className="hover:bg-red-50 px-3 md:px-5 py-2 rounded-full border-red-200 border text-red-500 transition flex items-center gap-2"
           >
-            History
+            <LogOut size={18} />
+            <span className="hidden md:inline">Logout</span>
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-10 text-center md:text-left">
-          <h2 className="text-3xl text-center font-black text-gray-800 tracking-tight">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
+        {/* Judul Responsif: Tengah di mobile, Kiri di Desktop */}
+        <div className="mb-8 md:mb-10 text-center md:text-left">
+          <h2 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
             Riwayat Cek
           </h2>
-          <p className="text-gray-400 text-center font-medium mt-1">
+          <p className="text-gray-400 font-medium mt-1 text-sm md:text-base">
             Daftar pemeriksaan kesehatan terakhir Anda
           </p>
         </div>
 
+        {/* GRID RIWAYAT */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-28 rounded-3xl bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] animate-pulse"
-              />
-            ))}
+          <div className="border border-gray-200 rounded-xl p-6 text-center text-gray-500">
+            Memuat riwayat cek...
           </div>
         ) : null}
 
         {!loading && error ? (
-          <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-sm">
-            <p className="text-red-600">{error}</p>
+          <div className="border border-red-200 bg-red-50 rounded-xl p-6 text-center text-red-600">
+            <p className="mb-2">{error}</p>
             {needsLogin ? (
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="mt-5 rounded-full bg-[#295f4e] px-5 py-2 text-white transition hover:bg-[#1f4a3c]"
-              >
-                Login Sekarang
-              </button>
+              <div className="mt-4">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="bg-[#295f4e] text-white px-5 py-2 rounded-lg w-full sm:w-auto"
+                >
+                  Login Sekarang
+                </button>
+              </div>
             ) : null}
           </div>
         ) : null}
 
-        {!loading && !error && histories.length === 0 ? renderEmptyState() : null}
+        {!loading && !error && histories.length === 0 ? (
+          <div className="border border-gray-200 rounded-xl p-6 text-center text-gray-500">
+            Belum ada riwayat cek yang tersimpan di akun ini.
+          </div>
+        ) : null}
 
         {!loading && !error && histories.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {histories.map((item) => (
-              <button
+              <div
                 key={item.id}
-                type="button"
                 onClick={() => openHistoryDetail(item)}
-                className="group bg-white p-6 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-transparent hover:border-[#327E66]/20 hover:shadow-xl transition-all duration-300 cursor-pointer flex items-center justify-between text-left"
+                className="group bg-white p-4 md:p-6 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-transparent hover:border-[#327E66]/20 hover:shadow-xl transition-all duration-300 cursor-pointer flex items-center justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-mint-green/10 rounded-2xl flex items-center justify-center text-[#327E66] group-hover:bg-[#327E66] group-hover:text-white transition-colors duration-300">
+                  <div className="w-12 h-12 bg-mint-green/10 rounded-2xl flex items-center justify-center text-[#327E66] group-hover:bg-[#327E66] group-hover:text-white transition-colors duration-300 shrink-0">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6"
@@ -180,22 +176,17 @@ const HistoryPage = () => {
                     </svg>
                   </div>
 
-                  <div>
-                    <p className="font-bold text-gray-700 group-hover:text-[#327E66] transition-colors">
+                  <div className="text-left">
+                    <p className="font-bold text-gray-700 group-hover:text-[#327E66] transition-colors text-base md:text-lg">
                       {formatDisease(item.disease)}
                     </p>
                     <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase mt-0.5">
                       {formatDate(item.created_at)}
                     </p>
-                    <p className="mt-2 text-sm text-gray-500">
-                      {typeof item?.result_payload?.risk_percent === "number"
-                        ? `Risiko ${item.result_payload.risk_percent}%`
-                        : "Hasil tersedia"}
-                    </p>
                   </div>
                 </div>
 
-                <div className="text-[#327E66] opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all">
+                <div className="text-[#327E66] opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all shrink-0">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -209,7 +200,7 @@ const HistoryPage = () => {
                     />
                   </svg>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         ) : null}

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ChevronLeft, Venus, Mars } from "lucide-react";
-import Profile from "../assets/Profile.png";
+import ProfileAvatar from "./ProfileAvatar";
 import IconShield from "../assets/Container.svg";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 
 export default function KolestrolPage() {
@@ -33,23 +34,13 @@ export default function KolestrolPage() {
       family_history: riwayat,
     };
 
-    console.log(payload); // cek dulu sebelum kirim
-
     try {
       const data = await apiRequest("/predict/cholesterol", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      navigate("/result", {
-        state: {
-          ...data,
-          type: "cholesterol",
-        },
-      });
-      console.log("HASIL:", data);
+      navigate("/result", { state: { ...data, type: "cholesterol" } });
     } catch (err) {
       console.error(err);
       setSubmitError(err.message || "Prediksi kolesterol gagal diproses.");
@@ -59,65 +50,72 @@ export default function KolestrolPage() {
   };
 
   return (
-    <div className="bg-[#f9faf7]">
-      <nav className="flex items-center justify-between py-4 px-15 sticky top-0 bg-[#f9faf7] z-10 shadow-sm ">
-        <a href="/" className="flex items-center gap-4 hover:bg-black/10 pr-2.5 rounded-md transition text-dark-green-teal font-semibold">
-          <ChevronLeft />
-          Kembali
-        </a>
+    <div className="bg-[#f9faf7] min-h-screen">
+      {/* ─── NAVBAR ─── */}
+      <nav className="flex items-center justify-between py-4 px-4 sm:px-8 md:px-15 sticky top-0 bg-[#f9faf7] z-10 shadow-sm">
+        <Link
+          to="/"
+          className="flex gap-2 text-base font-medium text-[#295f4e] items-center px-3 py-1 rounded-xl hover:text-[#295f4e]/75 transition"
+        >
+          <ChevronLeft size={22} /> Kembali
+        </Link>
         <a href="/">
-          <img src="/icons2.svg" className="h-8" alt="" />
+          <img src="/icons2.svg" className="h-8 hidden md:flex" alt="logo" />
         </a>
-        <img
-          src={Profile}
-          alt="Profile"
-          onClick={() => navigate("/profile")}
-          className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition"
-        />
+        <ProfileAvatar />
       </nav>
-      <header className="pt-5 flex flex-col gap-3 mx-25">
-        <h1 className="text-3xl font-semibold text-sub-title">
-          Diagnosa Penyakit Kolestrol
+
+      {/* ─── HEADER ─── */}
+      <header className="pt-5 flex flex-col gap-3 px-4 sm:px-8 md:px-25">
+        <h1 className="text-2xl md:text-3xl font-semibold text-sub-title">
+          Diagnosa Penyakit Kolesterol
         </h1>
-        <p className=" text-dark-green-teal/80">
-          Form evaluasi klinis untuk membantu prediksi risiko penyakit
-          kolestrol.
-          <br />
+        <p className="text-dark-green-teal/80 text-sm md:text-base">
+          Form evaluasi klinis untuk membantu prediksi risiko penyakit kolesterol.
           Silakan isi data pasien dengan lengkap dan akurat.
         </p>
       </header>
-      <form onSubmit={handleSubmit} className="m-5 h-full">
-        {submitError ? (
-          <div className="mx-15 mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
+
+      <form onSubmit={handleSubmit} className="p-4 sm:p-5 h-full">
+        {/* Error */}
+        {submitError && (
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
             {submitError}
           </div>
-        ) : null}
-        <div className="mx-15 rounded-xl pb-8 bg-[#f3f4f1]">
-          <h2 className="font-bold p-5 px-20 text-sub-title mb-3">
+        )}
+
+        {/* ─── DATA PERSONAL ─── */}
+        <div className="rounded-xl pb-8 bg-[#f3f4f1]">
+          <h2 className="font-bold p-5 px-5 md:px-20 text-sub-title mb-3">
             —— Data Personal
           </h2>
-          <div className="grid grid-cols-2 px-20 ">
-            <div id="umur" className="flex w-100 flex-col relative">
-              <label htmlFor="" className="my-3 font-semibold">
-                Berapa Usiamu?{" "}
+          <div className="grid grid-cols-1 sm:grid-cols-2 px-5 md:px-20 gap-6">
+            {/* Usia */}
+            <div className="flex flex-col">
+              <label className="my-3 font-semibold text-sm md:text-base">
+                Berapa Usiamu?
               </label>
-              <input
-                type="number"
-                value={umur}
-                onChange={(e) => setUmur(e.target.value)}
-                min={1}
-                max={120}
-                placeholder="Contoh : 17"
-                required
-                className="border-2  border-mint-green/60 rounded-xl p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
-              />
-              <span className="absolute left-83 translate-y-1/2 top-1/2 ">
-                Tahun
-              </span>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={umur}
+                  onChange={(e) => setUmur(e.target.value)}
+                  min={1}
+                  max={120}
+                  placeholder="Contoh : 17"
+                  required
+                  className="border-2 border-mint-green/60 rounded-xl p-3 w-full pr-20 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">
+                  Tahun
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col px-20">
-              <label htmlFor="" className="my-3 font-semibold">
-                Jenis Kelamin{" "}
+
+            {/* Jenis Kelamin */}
+            <div className="flex flex-col">
+              <label className="my-3 font-semibold text-sm md:text-base">
+                Jenis Kelamin
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="cursor-pointer">
@@ -129,18 +127,16 @@ export default function KolestrolPage() {
                     onChange={(e) => setGender(e.target.value)}
                   />
                   <div
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition hover:border-blue-500/70
-          ${
-            gender === "male"
-              ? "bg-blue-500 text-white border-blue-500"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-          }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition text-sm
+                      ${gender === "male"
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-500/70 hover:bg-gray-100"
+                      }`}
                   >
-                    <Mars size={20} />
-                    Laki-laki{" "}
+                    <Mars size={18} />
+                    Laki-laki
                   </div>
                 </label>
-
                 <label className="cursor-pointer">
                   <input
                     type="radio"
@@ -150,14 +146,13 @@ export default function KolestrolPage() {
                     onChange={(e) => setGender(e.target.value)}
                   />
                   <div
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 hover:border-pink-500/70 transition
-          ${
-            gender === "female"
-              ? "bg-pink-500 text-white border-pink-500"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-          }`}
+                    className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition text-sm
+                      ${gender === "female"
+                        ? "bg-pink-500 text-white border-pink-500"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-pink-500/70 hover:bg-gray-100"
+                      }`}
                   >
-                    <Venus size={20} />
+                    <Venus size={18} />
                     Perempuan
                   </div>
                 </label>
@@ -165,76 +160,81 @@ export default function KolestrolPage() {
             </div>
           </div>
         </div>
-        <h2 className="font-bold p-5 px-20 text-sub-title mt-5 mb-3">
-          —— Indikator Klinis & Gaya Hidup
+
+        {/* ─── INDIKATOR KLINIS ─── */}
+        <h2 className="font-bold p-5 px-4 md:px-20 text-sub-title mt-5 mb-3">
+          —— Indikator Klinis &amp; Gaya Hidup
         </h2>
-        <div className="grid grid-cols-2 gap-5 mt-5 mx-20">
-          <div id="tekananDarah" className="flex gap-1 flex-col relative">
-            <label htmlFor="" className="font-semibold">
-              Tekanan Darah Sistolik{" "}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5 px-0 sm:px-4 md:px-20">
+          {/* Tekanan Darah */}
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-sm md:text-base">
+              Tekanan Darah Sistolik
             </label>
-            <input
-              type="number"
-              min="50"
-              max="250"
-              value={sistolik}
-              onChange={(e) => setSistolik(e.target.value)}
-              placeholder="Contoh : 120"
-              required
-              className="border-2  border-mint-green/60 rounded-md p-3 mt-3 relative focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
-            />
-            <span className="absolute left-135 text-black/60 top-[53%]">
-              mmHg
-            </span>
-          </div>
-          <div id="merokok" className=" w-full flex flex-col gap-1 ">
-            <label htmlFor="" className=" font-semibold ">
-              Kebiasaan Merokok{" "}
-            </label>
-            <div className="flex w-full">
-              <select
-                name=""
-                id=""
-                value={merokok}
-                onChange={(e) => setMerokok(e.target.value)}
+            <div className="relative">
+              <input
+                type="number"
+                min="50"
+                max="250"
+                value={sistolik}
+                onChange={(e) => setSistolik(e.target.value)}
+                placeholder="Contoh : 120"
                 required
-                className="border-2 border-mint-green/60 rounded-md w-full p-3 mt-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
-              >
-                <option value="">Pilih</option>
-                <option value="ya">Ya</option>
-                <option value="tidak">Tidak</option>
-                <option value="kadang-kadang">Kadang-Kadang</option>
-              </select>
+                className="border-2 border-mint-green/60 rounded-md p-3 mt-3 w-full pr-20 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
+              />
+              <span className="absolute right-3 top-[60%] -translate-y-1/2 text-black/60 text-xs sm:text-sm pointer-events-none">
+                mmHg
+              </span>
             </div>
+          </div>
+
+          {/* Kebiasaan Merokok */}
+          <div className="flex flex-col gap-1">
+            <label className="font-semibold text-sm md:text-base">
+              Kebiasaan Merokok
+            </label>
+            <select
+              value={merokok}
+              onChange={(e) => setMerokok(e.target.value)}
+              required
+              className="border-2 border-mint-green/60 rounded-md w-full p-3 mt-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
+            >
+              <option value="">Pilih</option>
+              <option value="ya">Ya</option>
+              <option value="tidak">Tidak</option>
+              <option value="kadang-kadang">Kadang-Kadang</option>
+            </select>
           </div>
         </div>
-        <div className="px-20">
-          <div className="grid grid-cols-2 gap-5 mt-5">
-            <div id="polaMakanBerlemak" className=" w-full">
-              <label htmlFor="" className=" font-semibold ">
-                Seberapa Sering Kosnumsi Makanan Berlemak?{" "}
+
+        <div className="px-0 sm:px-4 md:px-20">
+          {/* Makanan Berlemak + Riwayat Keluarga */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+            {/* Makanan Berlemak */}
+            <div className="w-full">
+              <label className="font-semibold text-sm md:text-base">
+                Seberapa Sering Konsumsi Makanan Berlemak?
               </label>
-              <div className="flex w-full">
-                <select
-                  name=""
-                  id=""
-                  value={makananBerlemak}
-                  onChange={(e) => setMakananBerlemak(e.target.value)}
-                  required
-                  className="border-2 border-mint-green/60 rounded-md w-full p-3 mt-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
-                >
-                  <option value="">Pilih</option>
-                  <option value="jarang">Jarang</option>
-                  <option value="3-5x seminggu">3-5x Seminggu</option>
-                  <option value="setiap hari">Setiap Hari</option>
-                </select>
-              </div>
+              <select
+                value={makananBerlemak}
+                onChange={(e) => setMakananBerlemak(e.target.value)}
+                required
+                className="border-2 border-mint-green/60 rounded-md w-full p-3 mt-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
+              >
+                <option value="">Pilih</option>
+                <option value="jarang">Jarang</option>
+                <option value="3-5x seminggu">3-5x Seminggu</option>
+                <option value="setiap hari">Setiap Hari</option>
+              </select>
             </div>
-            <div id="riwayatKeluarga" className=" w-full">
-              <label htmlFor="" className="font-semibold">
-                <p className="indent-3">Riwayat Keluarga </p>
+
+            {/* Riwayat Keluarga */}
+            <div className="w-full">
+              <label className="font-semibold text-sm md:text-base">
+                Riwayat Keluarga
               </label>
-              <div className="grid grid-cols-2 text-center py-3 gap-5">
+              <div className="grid grid-cols-2 text-center py-3 gap-4">
                 <label className="cursor-pointer">
                   <input
                     type="radio"
@@ -245,16 +245,15 @@ export default function KolestrolPage() {
                     className="hidden"
                   />
                   <div
-                    className={`py-3 w-full  rounded-md border-[#adccbf] font-medium border-2 text-black/50 transition ${
+                    className={`py-3 w-full rounded-md border-[#adccbf] font-medium border-2 text-black/50 transition text-sm ${
                       riwayat === "tidak"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-white hover:bg-gray-100"
                     }`}
                   >
-                    <p>Tidak Ada</p>
+                    Tidak Ada
                   </div>
                 </label>
-
                 <label className="cursor-pointer">
                   <input
                     type="radio"
@@ -265,56 +264,52 @@ export default function KolestrolPage() {
                     className="hidden"
                   />
                   <div
-                    className={`py-3 px-8  rounded-md border-[#adccbf] font-medium border-2 text-black/50 transition ${
+                    className={`py-3 w-full rounded-md border-[#adccbf] font-medium border-2 text-black/50 transition text-sm ${
                       riwayat === "ya"
                         ? "bg-[#b6d3b9] text-sub-title"
                         : "bg-white hover:bg-gray-100"
                     }`}
                   >
-                    <p>Ada</p>
+                    Ada
                   </div>
                 </label>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 mt-5">
-            <div id="olahraga" className=" w-full ">
-              <label htmlFor="" className="my-3 font-semibold ">
-                Seberapa Sering Olahraga?{" "}
-              </label>
-              <div className="flex w-full my-3">
-                <select
-                  name=""
-                  id=""
-                  value={olahraga}
-                  onChange={(e) => setOlahraga(e.target.value)}
-                  required
-                  className="border-2 border-mint-green/60 rounded-md w-full p-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30"
-                >
-                  <option value="">Pilih</option>
-                  <option value="tidak pernah">Tidak Pernah</option>
-                  <option value="jarang">Jarang</option>
-                  <option value="3x seminggu">3x Seminggu</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-between mt-20"></div>
 
-          <div className="flex justify-between pb-15 border-t border-gray-300 mt-10 items-center pt-5">
+          {/* Frekuensi Olahraga */}
+          <div className="mt-5 w-full">
+            <label className="font-semibold text-sm md:text-base">
+              Seberapa Sering Olahraga?
+            </label>
+            <select
+              value={olahraga}
+              onChange={(e) => setOlahraga(e.target.value)}
+              required
+              className="border-2 border-mint-green/60 rounded-md w-full p-3 mt-3 focus:outline-none focus:border-pure-green focus:ring-2 focus:ring-pure-green/30 text-sm md:text-base"
+            >
+              <option value="">Pilih</option>
+              <option value="tidak pernah">Tidak Pernah</option>
+              <option value="jarang">Jarang</option>
+              <option value="3x seminggu">3x Seminggu</option>
+            </select>
+          </div>
+
+          {/* ─── FOOTER FORM ─── */}
+          <div className="mt-10 flex flex-col gap-4 border-t border-gray-300 pb-10 pt-5 sm:flex-row sm:items-center sm:justify-between lg:pr-56">
             <div className="flex gap-2 items-center">
-              <img src={IconShield} alt="" className="w-3" />
-              <p className="text-[#8F6F6D] align-middle">
+              <img src={IconShield} alt="" className="w-3 shrink-0" />
+              <p className="text-[#8F6F6D] text-xs md:text-sm">
                 Data kamu tidak akan disimpan. Privasi dijamin 100%.
               </p>
             </div>
             <button
               type="submit"
               disabled={submitting}
-              className="bg-pine-green py-2 px-10 flex gap-3 rounded-xl mx-45 text-white hover:scale-105 transition group disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+              className="bg-pine-green py-3 px-8 flex items-center justify-center gap-3 rounded-xl text-white hover:scale-105 transition group disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 w-full sm:w-auto"
             >
-              {submitting ? "Memproses..." : "Lihat hasil prediksi"}{" "}
-              <ArrowRight className="group-hover:translate-x-2 transition" />
+              {submitting ? "Memproses..." : "Lihat hasil prediksi"}
+              <ArrowRight className="group-hover:translate-x-2 transition" size={18} />
             </button>
           </div>
         </div>

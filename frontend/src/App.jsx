@@ -6,7 +6,7 @@ import LoginPage from "./components/LoginPage";
 import LandingPage from "./components/LandingPage";
 import ProfilePage from "./components/ProfilePage";
 import HistoryCek from "./components/HistoryCek";
-import AboutPage from "./components/AboutPage";
+import ChatbotWidget from "./components/ChatbotWidget";
 
 import JantungPage from "./components/JantungPage";
 import DiabetesPage from "./components/DiabetesPage";
@@ -22,7 +22,6 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/history" element={<HistoryCek />} />
-          <Route path="/about" element={<AboutPage />} />
           <Route path="/landing/deteksi-jantung" element={<JantungPage />} />
           <Route path="/landing/deteksi-diabetes" element={<DiabetesPage />} />
           <Route
@@ -31,6 +30,7 @@ function App() {
           />
           <Route path="/result" element={<PageResult />} /> 
         </Routes>
+        <ChatbotWidget />
       </BrowserRouter>
     </GoogleOAuthProvider>
   );
